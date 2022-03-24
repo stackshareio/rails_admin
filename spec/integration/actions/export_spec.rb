@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'csv'
 
@@ -58,7 +60,7 @@ RSpec.describe 'Export action', type: :request do
                                    'Updated at [Draft]', 'Date [Draft]', 'Round [Draft]', 'Pick [Draft]', 'Overall [Draft]',
                                    'College [Draft]', 'Notes [Draft]', 'Id [Comments]', 'Content [Comments]', 'Created at [Comments]',
                                    'Updated at [Comments]']
-    expect(csv.flatten).to include(@player.name + ' exported')
+    expect(csv.flatten).to include("#{@player.name} exported")
     expect(csv.flatten).to include(@player.team.name)
     expect(csv.flatten).to include(@player.draft.college)
 
@@ -80,16 +82,28 @@ RSpec.describe 'Export action', type: :request do
     is_expected.to have_content @player.team.name
   end
 
+  it 'works with Turbo Drive enabled', js: true do
+    visit export_path(model_name: 'player')
+    page.execute_script 'console.error = function(error) { throw error }'
+    expect { find_button('Export to csv').trigger('click') }.not_to raise_error
+  end
+
   it 'exports polymorphic fields the easy way for now' do
     visit export_path(model_name: 'comment')
     select "<comma> ','", from: 'csv_options_generator_col_sep'
     click_button 'Export to csv'
     csv = CSV.parse page.driver.response.body
     expect(csv[0]).to match_array ['Id', 'Commentable', 'Commentable type', 'Content', 'Created at', 'Updated at']
-    csv[1..-1].each do |line|
+    csv[1..].each do |line|
       expect(line[csv[0].index('Commentable')]).to eq(@player.id.to_s)
       expect(line[csv[0].index('Commentable type')]).to eq(@player.class.to_s)
     end
+  end
+
+  it 'does not break when nothing is checked' do
+    visit export_path(model_name: 'comment')
+    all('input[type="checkbox"]').each(&:uncheck)
+    expect { click_button 'Export to csv' }.not_to raise_error
   end
 
   context 'with csv format' do
@@ -100,9 +114,40 @@ RSpec.describe 'Export action', type: :request do
     end
   end
 
-  it 'supports bulk export' do
-    visit index_path(model_name: 'player')
-    click_link 'Export found Players'
-    is_expected.to have_content('Select fields to export')
+  context 'on cancel' do
+    before do
+      @player = FactoryBot.create :player
+      visit export_path(model_name: 'player')
+    end
+
+    it 'does nothing', js: true do
+      find_button('Cancel').trigger('click')
+      is_expected.to have_text 'No actions were taken'
+    end
+  end
+
+  describe 'bulk export' do
+    it 'is supported' do
+      visit index_path(model_name: 'player')
+      click_link 'Export found Players'
+      is_expected.to have_content('Select fields to export')
+    end
+
+    describe 'with model scope' do
+      let!(:comments) { %w[something anything].map { |content| FactoryBot.create :comment_confirmed, content: content } }
+      before do
+        RailsAdmin.config do |config|
+          config.model Comment::Confirmed do
+            scope { Comment::Confirmed.unscoped }
+          end
+        end
+      end
+
+      it 'overrides default_scope' do
+        page.driver.post(export_path(model_name: 'comment~confirmed', schema: {only: ['content']}, csv: true, all: true, csv_options: {generator: {col_sep: ','}}, bulk_ids: comments.map(&:id)))
+        csv = CSV.parse page.driver.response.body
+        expect(csv.flatten).to match_array %w[Content something anything]
+      end
+    end
   end
 end

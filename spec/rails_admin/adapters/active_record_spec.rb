@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'timecop'
 
@@ -10,10 +12,17 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
     end
   end
   let(:like) do
-    if ['postgresql', 'postgis'].include? activerecord_config[:adapter]
+    if %w[postgresql postgis].include? activerecord_config[:adapter]
       '(field ILIKE ?)'
     else
       '(LOWER(field) LIKE ?)'
+    end
+  end
+  let(:not_like) do
+    if %w[postgresql postgis].include? activerecord_config[:adapter]
+      '(field NOT ILIKE ?)'
+    else
+      '(LOWER(field) NOT LIKE ?)'
     end
   end
 
@@ -52,16 +61,20 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       ]
     end
 
-    it '#new returns instance of AbstractObject' do
-      expect(abstract_model.new.object).to be_instance_of(Player)
+    it '#new returns an ActiveRecord instance' do
+      expect(abstract_model.new).to be_a(ActiveRecord::Base)
     end
 
-    it '#get returns instance of AbstractObject' do
-      expect(abstract_model.get(@players.first.id).object).to eq(@players.first)
+    it '#get returns an ActiveRecord instance' do
+      expect(abstract_model.get(@players.first.id)).to eq(@players.first)
     end
 
     it '#get returns nil when id does not exist' do
       expect(abstract_model.get('abc')).to be_nil
+    end
+
+    it '#get returns an object that can be passed to ActiveJob' do
+      expect { NullJob.perform_later(abstract_model.get(@players.first.id)) }.not_to raise_error
     end
 
     it '#first returns a player' do
@@ -90,7 +103,7 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
 
     it '#destroy destroys multiple items' do
       abstract_model.destroy(@players[0..1])
-      expect(Player.all).to eq(@players[2..-1])
+      expect(Player.all).to match_array(@players[2..])
     end
 
     it '#where returns filtered results' do
@@ -270,13 +283,14 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
         expect(build_statement(:string, 'foo', 'was')).to be_nil
         expect(build_statement(:string, 'foo', 'default')).to eq([like, '%foo%'])
         expect(build_statement(:string, 'foo', 'like')).to eq([like, '%foo%'])
+        expect(build_statement(:string, 'foo', 'not_like')).to eq([not_like, '%foo%'])
         expect(build_statement(:string, 'foo', 'starts_with')).to eq([like, 'foo%'])
         expect(build_statement(:string, 'foo', 'ends_with')).to eq([like, '%foo'])
         expect(build_statement(:string, 'foo', 'is')).to eq(['(field = ?)', 'foo'])
       end
 
       it 'performs case-insensitive searches' do
-        unless ['postgresql', 'postgis'].include?(activerecord_config[:adapter])
+        unless %w[postgresql postgis].include?(activerecord_config[:adapter])
           expect(build_statement(:string, 'foo', 'default')).to eq([like, '%foo%'])
           expect(build_statement(:string, 'FOO', 'default')).to eq([like, '%foo%'])
         end
@@ -328,10 +342,10 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
 
     describe 'boolean type queries' do
       it 'supports boolean type query' do
-        %w(false f 0).each do |value|
+        %w[false f 0].each do |value|
           expect(build_statement(:boolean, value, nil)).to eq(['(field IS NULL OR field = ?)', false])
         end
-        %w(true t 1).each do |value|
+        %w[true t 1].each do |value|
           expect(build_statement(:boolean, value, nil)).to eq(['(field = ?)', true])
         end
         expect(build_statement(:boolean, 'word', nil)).to be_nil
@@ -339,13 +353,13 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
 
       it "supports '_blank' operator" do
         [['_blank', ''], ['', '_blank']].each do |value, operator|
-          expect(build_statement(:boolean, value, operator)).to eq(["(field IS NULL)"])
+          expect(build_statement(:boolean, value, operator)).to eq(['(field IS NULL)'])
         end
       end
 
       it "supports '_present' operator" do
         [['_present', ''], ['', '_present']].each do |value, operator|
-          expect(build_statement(:boolean, value, operator)).to eq(["(field IS NOT NULL)"])
+          expect(build_statement(:boolean, value, operator)).to eq(['(field IS NOT NULL)'])
         end
       end
 
@@ -363,13 +377,13 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
 
       it "supports '_empty' operator" do
         [['_empty', ''], ['', '_empty']].each do |value, operator|
-          expect(build_statement(:boolean, value, operator)).to eq(["(field IS NULL)"])
+          expect(build_statement(:boolean, value, operator)).to eq(['(field IS NULL)'])
         end
       end
 
       it "supports '_not_empty' operator" do
         [['_not_empty', ''], ['', '_not_empty']].each do |value, operator|
-          expect(build_statement(:boolean, value, operator)).to eq(["(field IS NOT NULL)"])
+          expect(build_statement(:boolean, value, operator)).to eq(['(field IS NOT NULL)'])
         end
       end
     end
@@ -385,7 +399,7 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
         expect(build_statement(:integer, ['6', '', ''], 'default')).to eq(['(field = ?)', 6])
         expect(build_statement(:integer, ['7', '10', ''], 'default')).to eq(['(field = ?)', 7])
         expect(build_statement(:integer, ['8', '', '20'], 'default')).to eq(['(field = ?)', 8])
-        expect(build_statement(:integer, %w(9 10 20), 'default')).to eq(['(field = ?)', 9])
+        expect(build_statement(:integer, %w[9 10 20], 'default')).to eq(['(field = ?)', 9])
       end
 
       it 'supports integer type range query' do
@@ -394,7 +408,7 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
         expect(build_statement(:integer, ['', '3', ''], 'between')).to eq(['(field >= ?)', 3])
         expect(build_statement(:integer, ['', '', '5'], 'between')).to eq(['(field <= ?)', 5])
         expect(build_statement(:integer, ['', '10', '20'], 'between')).to eq(['(field BETWEEN ? AND ?)', 10, 20])
-        expect(build_statement(:integer, %w(15 10 20), 'between')).to eq(['(field BETWEEN ? AND ?)', 10, 20])
+        expect(build_statement(:integer, %w[15 10 20], 'between')).to eq(['(field BETWEEN ? AND ?)', 10, 20])
         expect(build_statement(:integer, ['', 'word1', ''], 'between')).to be_nil
         expect(build_statement(:integer, ['', '', 'word2'], 'between')).to be_nil
         expect(build_statement(:integer, ['', 'word3', 'word4'], 'between')).to be_nil
@@ -445,9 +459,9 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_blank' operator" do
         [['_blank', ''], ['', '_blank']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NULL)'])
           end
         end
       end
@@ -455,9 +469,9 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_present' operator" do
         [['_present', ''], ['', '_present']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NOT NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NOT NULL)'])
           end
         end
       end
@@ -465,9 +479,9 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_null' operator" do
         [['_null', ''], ['', '_null']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NULL)'])
           end
         end
       end
@@ -475,9 +489,9 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_not_null' operator" do
         [['_not_null', ''], ['', '_not_null']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NOT NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NOT NULL)'])
           end
         end
       end
@@ -485,9 +499,9 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_empty' operator" do
         [['_empty', ''], ['', '_empty']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NULL)'])
           end
         end
       end
@@ -495,29 +509,45 @@ RSpec.describe 'RailsAdmin::Adapters::ActiveRecord', active_record: true do
       it "supports '_not_empty' operator" do
         [['_not_empty', ''], ['', '_not_empty']].each do |value, operator|
           aggregate_failures do
-            expect(build_statement(:integer, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:decimal, value, operator)).to eq(["(field IS NOT NULL)"])
-            expect(build_statement(:float, value, operator)).to eq(["(field IS NOT NULL)"])
+            expect(build_statement(:integer, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:decimal, value, operator)).to eq(['(field IS NOT NULL)'])
+            expect(build_statement(:float, value, operator)).to eq(['(field IS NOT NULL)'])
           end
         end
       end
     end
 
-    describe 'date type queries' do
+    describe 'date/time type queries' do
       let(:scope) { FieldTest.all }
 
       it 'supports date type query' do
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', 'February 01, 2012', 'March 01, 2012'], o: 'between'}}))).to eq(["(field_tests.date_field BETWEEN '2012-02-01' AND '2012-03-01')"])
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', 'March 01, 2012', ''], o: 'between'}}))).to eq(["(field_tests.date_field >= '2012-03-01')"])
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', '', 'February 01, 2012'], o: 'between'}}))).to eq(["(field_tests.date_field <= '2012-02-01')"])
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['February 01, 2012'], o: 'default'}}))).to eq(["(field_tests.date_field BETWEEN '2012-02-01' AND '2012-02-01')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', '2012-02-01', '2012-03-01'], o: 'between'}}))).to eq(["(field_tests.date_field BETWEEN '2012-02-01' AND '2012-03-01')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', '2012-03-01', ''], o: 'between'}}))).to eq(["(field_tests.date_field >= '2012-03-01')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['', '', '2012-02-01'], o: 'between'}}))).to eq(["(field_tests.date_field <= '2012-02-01')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: ['2012-02-01'], o: 'default'}}))).to eq(["(field_tests.date_field = '2012-02-01')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: [], o: 'today'}}))).to eq(["(field_tests.date_field = '#{Date.today}')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: [], o: 'yesterday'}}))).to eq(["(field_tests.date_field = '#{Date.yesterday}')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: [], o: 'this_week'}}))).to eq(["(field_tests.date_field BETWEEN '#{Date.today.beginning_of_week}' AND '#{Date.today.end_of_week}')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'date_field' => {'1' => {v: [], o: 'last_week'}}))).to eq(["(field_tests.date_field BETWEEN '#{1.week.ago.to_date.beginning_of_week}' AND '#{1.week.ago.to_date.end_of_week}')"])
       end
 
       it 'supports datetime type query' do
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', 'February 01, 2012 12:00', 'March 01, 2012 12:00'], o: 'between'}}))).to eq(predicates_for(scope.where(['(field_tests.datetime_field BETWEEN ? AND ?)', Time.utc(2012, 2, 1), Time.utc(2012, 3, 1).end_of_day])))
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', 'March 01, 2012 12:00', ''], o: 'between'}}))).to eq(predicates_for(scope.where(['(field_tests.datetime_field >= ?)', Time.utc(2012, 3, 1)])))
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', '', 'February 01, 2012 12:00'], o: 'between'}}))).to eq(predicates_for(scope.where(['(field_tests.datetime_field <= ?)', Time.utc(2012, 2, 1).end_of_day])))
-        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['February 01, 2012 12:00'], o: 'default'}}))).to eq(predicates_for(scope.where(['(field_tests.datetime_field BETWEEN ? AND ?)', Time.utc(2012, 2, 1), Time.utc(2012, 2, 1).end_of_day])))
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', '2012-02-01T12:00:00', '2012-03-01T12:00:00'], o: 'between'}}))).to eq(["(field_tests.datetime_field BETWEEN '2012-02-01 12:00:00' AND '2012-03-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', '2012-03-01T12:00:00', ''], o: 'between'}}))).to eq(["(field_tests.datetime_field >= '2012-03-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['', '', '2012-02-01T12:00:00'], o: 'between'}}))).to eq(["(field_tests.datetime_field <= '2012-02-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: ['2012-02-01T12:00:00'], o: 'default'}}))).to eq(["(field_tests.datetime_field = '2012-02-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: [], o: 'today'}}))).to eq(["(field_tests.datetime_field BETWEEN '#{Date.today} 00:00:00' AND '#{Date.today} 23:59:59.999999')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: [], o: 'yesterday'}}))).to eq(["(field_tests.datetime_field BETWEEN '#{Date.yesterday} 00:00:00' AND '#{Date.yesterday} 23:59:59.999999')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: [], o: 'this_week'}}))).to eq(["(field_tests.datetime_field BETWEEN '#{Date.today.beginning_of_week} 00:00:00' AND '#{Date.today.end_of_week} 23:59:59.999999')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'datetime_field' => {'1' => {v: [], o: 'last_week'}}))).to eq(["(field_tests.datetime_field BETWEEN '#{1.week.ago.to_date.beginning_of_week} 00:00:00' AND '#{1.week.ago.to_date.end_of_week} 23:59:59.999999')"])
+      end
+
+      it 'supports time type query' do
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'time_field' => {'1' => {v: ['', '2000-01-01T12:00:00', '2000-01-01T14:00:00'], o: 'between'}}))).to eq(["(field_tests.time_field BETWEEN '2000-01-01 12:00:00' AND '2000-01-01 14:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'time_field' => {'1' => {v: ['', '2000-01-01T14:00:00', ''], o: 'between'}}))).to eq(["(field_tests.time_field >= '2000-01-01 14:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'time_field' => {'1' => {v: ['', '', '2000-01-01T12:00:00'], o: 'between'}}))).to eq(["(field_tests.time_field <= '2000-01-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'time_field' => {'1' => {v: ['2000-01-01T12:00:00'], o: 'default'}}))).to eq(["(field_tests.time_field = '2000-01-01 12:00:00')"])
+        expect(predicates_for(abstract_model.send(:filter_scope, scope, 'time_field' => {'1' => {v: ['2021-02-03T12:00:00'], o: 'default'}}))).to eq(["(field_tests.time_field = '2000-01-01 12:00:00')"])
       end
     end
 

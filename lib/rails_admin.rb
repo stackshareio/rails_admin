@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_admin/engine'
 require 'rails_admin/abstract_model'
 require 'rails_admin/config'
@@ -5,7 +7,6 @@ require 'rails_admin/extension'
 require 'rails_admin/extensions/cancancan'
 require 'rails_admin/extensions/pundit'
 require 'rails_admin/extensions/paper_trail'
-require 'rails_admin/extensions/history'
 require 'rails_admin/support/csv_converter'
 require 'rails_admin/support/hash_helper'
 require 'yaml'
@@ -28,7 +29,7 @@ module RailsAdmin
     if entity
       RailsAdmin::Config.model(entity, &block)
     elsif block_given?
-      block.call(RailsAdmin::Config)
+      RailsAdmin::Config.apply(&block)
     else
       RailsAdmin::Config
     end
@@ -56,5 +57,3 @@ module RailsAdmin
     YAML.dump(object)
   end
 end
-
-require 'rails_admin/bootstrap-sass' unless defined? Bootstrap

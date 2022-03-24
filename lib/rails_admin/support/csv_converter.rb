@@ -1,11 +1,14 @@
 # encoding: UTF-8
+# frozen_string_literal: true
+
 require 'csv'
 
 module RailsAdmin
   class CSVConverter
-    def initialize(objects = [], schema = {})
+    def initialize(objects = [], schema = nil)
       @fields = []
       @associations = []
+      schema ||= {}
 
       return self if (@objects = objects).blank?
 
@@ -13,12 +16,14 @@ module RailsAdmin
       @abstract_model = RailsAdmin::AbstractModel.new(@model)
       @model_config = @abstract_model.config
       @methods = [(schema[:only] || []) + (schema[:methods] || [])].flatten.compact
-      @fields = @methods.collect { |m| export_fields_for(m).first }
+      @fields = @methods.collect { |m| export_field_for(m) }.compact
       @empty = ::I18n.t('admin.export.empty_value_for_associated_objects')
       schema_include = schema.delete(:include) || {}
 
       @associations = schema_include.each_with_object({}) do |(key, values), hash|
-        association = association_for(key)
+        association = export_field_for(key)
+        next unless association&.association?
+
         model_config = association.associated_model_config
         abstract_model = model_config.abstract_model
         methods = [(values[:only] || []) + (values[:methods] || [])].flatten.compact
@@ -28,7 +33,7 @@ module RailsAdmin
           model: abstract_model.model,
           abstract_model: abstract_model,
           model_config: model_config,
-          fields: methods.collect { |m| export_fields_for(m, model_config).first },
+          fields: methods.collect { |m| export_field_for(m, model_config) }.compact,
         }
         hash
       end
@@ -36,18 +41,17 @@ module RailsAdmin
 
     def to_csv(options = {})
       if CSV::VERSION == '3.0.2'
-        raise <<-MSG.gsub(/^\s+/, '')
+        raise <<~MSG
           CSV library bundled with Ruby 2.6.0 has encoding issue, please upgrade Ruby to 2.6.1 or later.
           https://github.com/ruby/csv/issues/62
         MSG
       end
+
       options = HashWithIndifferentAccess.new(options)
       encoding_to = Encoding.find(options[:encoding_to]) if options[:encoding_to].present?
 
       csv_string = generate_csv_string(options)
-      if encoding_to
-        csv_string = csv_string.encode(encoding_to, invalid: :replace, undef: :replace, replace: '?')
-      end
+      csv_string = csv_string.encode(encoding_to, invalid: :replace, undef: :replace, replace: '?') if encoding_to
 
       # Add a BOM for utf8 encodings, helps with utf8 auto-detect for some versions of Excel.
       # Don't add if utf8 but user don't want to touch input encoding:
@@ -61,12 +65,8 @@ module RailsAdmin
 
   private
 
-    def association_for(key)
-      export_fields_for(key).detect(&:association?)
-    end
-
-    def export_fields_for(method, model_config = @model_config)
-      model_config.export.fields.select { |f| f.name == method }
+    def export_field_for(method, model_config = @model_config)
+      model_config.export.fields.detect { |f| f.name == method }
     end
 
     def generate_csv_string(options)

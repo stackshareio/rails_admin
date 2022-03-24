@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_support/core_ext/string/strip'
 
 module RailsAdmin
@@ -11,7 +13,7 @@ module RailsAdmin
 
         def message
           @message = @version.event
-          @version.respond_to?(:changeset) && @version.changeset.present? ? @message + ' [' + @version.changeset.to_a.collect { |c| c[0] + ' = ' + c[1][1].to_s }.join(', ') + ']' : @message
+          @version.respond_to?(:changeset) && @version.changeset.present? ? @message + ' [' + @version.changeset.to_a.collect { |c| "#{c[0]} = #{c[1][1]}" }.join(', ') + ']' : @message
         end
 
         def created_at
@@ -23,7 +25,11 @@ module RailsAdmin
         end
 
         def username
-          (@user_class.find(@version.whodunnit).try(:email) rescue nil) || @version.whodunnit
+          begin
+            @user_class.find(@version.whodunnit).try(:email)
+          rescue StandardError
+            nil
+          end || @version.whodunnit
         end
 
         def item
@@ -45,7 +51,7 @@ module RailsAdmin
           created_at: :created_at,
           message: :event,
         }.freeze
-        E_VERSION_MODEL_NOT_SET = <<-EOS.strip_heredoc.freeze
+        E_VERSION_MODEL_NOT_SET = <<~ERROR
           Please set up PaperTrail's version model explicitly.
 
               config.audit_with :paper_trail, 'User', 'PaperTrail::Version'
@@ -54,16 +60,17 @@ module RailsAdmin
           (https://github.com/paper-trail-gem/paper_trail#6a-custom-version-classes)
           that configuration will take precedence over what you specify in
           `audit_with`.
-        EOS
+        ERROR
 
         def self.setup
-          raise('PaperTrail not found') unless defined?(::PaperTrail)
-          RailsAdmin::Extensions::ControllerExtension.send(:include, ControllerExtension)
+          raise 'PaperTrail not found' unless defined?(::PaperTrail)
+
+          RailsAdmin::Extensions::ControllerExtension.include ControllerExtension
         end
 
         def initialize(controller, user_class = 'User', version_class = '::Version')
           @controller = controller
-          @controller.send(:set_paper_trail_whodunnit) if @controller
+          @controller&.send(:set_paper_trail_whodunnit)
           begin
             @user_class = user_class.to_s.constantize
           rescue NameError
@@ -149,10 +156,10 @@ module RailsAdmin
         # classes](https://github.com/paper-trail-gem/paper_trail#6a-custom-version-classes)
         #
         # ```ruby
-        # has_paper_trail class_name: 'MyVersion'
+        # has_paper_trail versions: { class_name: 'MyVersion' }
         # ```
         def version_class_for(model)
-          model.paper_trail_options[:class_name].try(:constantize) || @version_class
+          model.paper_trail_options.dig(:versions, :class_name).try(:constantize) || @version_class
         end
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable, :lockable and :timeoutable
@@ -9,6 +11,7 @@ class User < ActiveRecord::Base
   has_attached_file :avatar, styles: {medium: '300x300>', thumb: '100x100>'}
 
   attr_accessor :delete_avatar
+
   before_validation { self.avatar = nil if delete_avatar == '1' }
 
   def attr_accessible_role
@@ -16,6 +19,6 @@ class User < ActiveRecord::Base
   end
 
   def roles_enum
-    [:admin, :user]
+    %i[admin user]
   end
 end

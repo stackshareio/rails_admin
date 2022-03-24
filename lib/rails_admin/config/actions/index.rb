@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'activemodel-serializers-xml'
 
 module RailsAdmin
@@ -11,7 +13,7 @@ module RailsAdmin
         end
 
         register_instance_option :http_methods do
-          [:get, :post]
+          %i[get post]
         end
 
         register_instance_option :route_fragment do
@@ -20,7 +22,8 @@ module RailsAdmin
 
         register_instance_option :breadcrumb_parent do
           parent_model = bindings[:abstract_model].try(:config).try(:parent)
-          if am = parent_model && RailsAdmin.config(parent_model).try(:abstract_model)
+          am = parent_model && RailsAdmin.config(parent_model).try(:abstract_model)
+          if am
             [:index, am]
           else
             [:dashboard]
@@ -33,9 +36,7 @@ module RailsAdmin
 
             unless @model_config.list.scopes.empty?
               if params[:scope].blank?
-                unless @model_config.list.scopes.first.nil?
-                  @objects = @objects.send(@model_config.list.scopes.first)
-                end
+                @objects = @objects.send(@model_config.list.scopes.first) unless @model_config.list.scopes.first.nil?
               elsif @model_config.list.scopes.collect(&:to_s).include?(params[:scope])
                 @objects = @objects.send(params[:scope].to_sym)
               end
@@ -47,7 +48,7 @@ module RailsAdmin
               end
 
               format.json do
-                output = begin
+                output =
                   if params[:compact]
                     primary_key_method = @association ? @association.associated_primary_key : @model_config.abstract_model.primary_key
                     label_method = @model_config.object_label_method
@@ -55,7 +56,7 @@ module RailsAdmin
                   else
                     @objects.to_json(@schema)
                   end
-                end
+
                 if params[:send_data]
                   send_data output, filename: "#{params[:model_name]}_#{DateTime.now.strftime('%Y-%m-%d_%Hh%Mm%S')}.json"
                 else
@@ -87,7 +88,7 @@ module RailsAdmin
         end
 
         register_instance_option :link_icon do
-          'icon-th-list'
+          'fas fa-th-list'
         end
       end
     end

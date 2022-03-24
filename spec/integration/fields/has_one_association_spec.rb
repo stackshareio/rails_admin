@@ -1,20 +1,14 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'HasOneAssociation field', type: :request do
   subject { page }
 
-  describe 'with inverse_of option' do
-    it 'adds a related id to the belongs_to create team link' do
-      @player = FactoryBot.create :player
-      visit edit_path(model_name: 'player', id: @player.id)
-      is_expected.to have_selector("a[data-link='/admin/team/new?associations%5Bplayers%5D=#{@player.id}&modal=true']")
-    end
-
-    it 'adds a related id to the has_many create team link' do
-      @team = FactoryBot.create :team
-      visit edit_path(model_name: 'team', id: @team.id)
-      is_expected.to have_selector("a[data-link='/admin/player/new?associations%5Bteam%5D=#{@team.id}&modal=true']")
-    end
+  it 'adds a related id to the has_one create draft link' do
+    @player = FactoryBot.create :player
+    visit edit_path(model_name: 'player', id: @player.id)
+    is_expected.to have_selector("a[data-link='/admin/draft/new?draft%5Bplayer_id%5D=#{@player.id}&modal=true']")
   end
 
   context 'on create' do
@@ -29,7 +23,7 @@ RSpec.describe 'HasOneAssociation field', type: :request do
 
     it 'creates an object with correct associations' do
       post new_path(model_name: 'player', player: {name: 'Jackie Robinson', number: 42, position: 'Second baseman', draft_id: @draft.id})
-      @player = RailsAdmin::AbstractModel.new('Player').all.to_a.detect { |player| player.name == 'Jackie Robinson' }
+      @player = Player.where(name: 'Jackie Robinson').first
       @draft.reload
       expect(@player.draft).to eq(@draft)
     end
@@ -68,50 +62,6 @@ RSpec.describe 'HasOneAssociation field', type: :request do
     end
   end
 
-  describe 'nested form' do
-    it 'works', js: true do
-      @record = FactoryBot.create :field_test
-      visit edit_path(model_name: 'field_test', id: @record.id)
-
-      find('#field_test_comment_attributes_field .add_nested_fields').click
-      fill_in 'field_test_comment_attributes_content', with: 'nested comment content'
-
-      # trigger click via JS, workaround for instability in CI
-      execute_script %($('button[name="_save"]').trigger('click');)
-      is_expected.to have_content('Field test successfully updated')
-
-      @record.reload
-      expect(@record.comment.content.strip).to eq('nested comment content')
-    end
-
-    it 'is optional' do
-      @record = FactoryBot.create :field_test
-      visit edit_path(model_name: 'field_test', id: @record.id)
-      click_button 'Save'
-      @record.reload
-      expect(@record.comment).to be_nil
-    end
-
-    context 'when XSS attack is attempted', js: true do
-      it 'does not break on adding a new item' do
-        allow(I18n).to receive(:t).and_call_original
-        expect(I18n).to receive(:t).with('admin.form.new_model', name: 'Comment').and_return('<script>throw "XSS";</script>')
-        @record = FactoryBot.create :field_test
-        visit edit_path(model_name: 'field_test', id: @record.id)
-        find('#field_test_comment_attributes_field .add_nested_fields').click
-      end
-
-      it 'does not break on adding an existing item' do
-        RailsAdmin.config Comment do
-          object_label_method :content
-        end
-        @record = FactoryBot.create :field_test
-        FactoryBot.create :comment, content: '<script>throw "XSS";</script>', commentable: @record
-        visit edit_path(model_name: 'field_test', id: @record.id)
-      end
-    end
-  end
-
   context 'with custom primary_key option' do
     let(:user) { FactoryBot.create :managing_user }
     let!(:team) { FactoryBot.create(:managed_team) }
@@ -122,7 +72,7 @@ RSpec.describe 'HasOneAssociation field', type: :request do
       end
     end
 
-    it "allows update" do
+    it 'allows update' do
       visit edit_path(model_name: 'managing_user', id: user.id)
       select(team.name, from: 'Team')
       click_button 'Save'
@@ -136,13 +86,12 @@ RSpec.describe 'HasOneAssociation field', type: :request do
         end
       end
 
-      it "allows update", js: true do
+      it 'allows update', js: true do
         visit edit_path(model_name: 'managing_user', id: user.id)
         find('input.ra-filtering-select-input').set('T')
-        page.execute_script("$('input.ra-filtering-select-input').trigger('focus')")
-        page.execute_script("$('input.ra-filtering-select-input').trigger('keydown')")
+        page.execute_script("document.querySelector('input.ra-filtering-select-input').dispatchEvent(new KeyboardEvent('keydown'))")
         expect(page).to have_selector('ul.ui-autocomplete li.ui-menu-item a')
-        page.execute_script %{$('ul.ui-autocomplete li.ui-menu-item a:contains("#{team.name}")').trigger('mouseenter').click()}
+        page.execute_script %{[...document.querySelectorAll('ul.ui-autocomplete li.ui-menu-item')].find(e => e.innerText.includes("#{team.name}")).click()}
         click_button 'Save'
         expect(ManagingUser.first.team).to eq team
       end

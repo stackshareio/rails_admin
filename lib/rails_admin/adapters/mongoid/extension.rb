@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RailsAdmin
   module Adapters
     module Mongoid
@@ -9,7 +11,9 @@ module RailsAdmin
           self.nested_attributes_options = {}
           class << self
             def rails_admin(&block)
-              RailsAdmin.config(self, &block)
+              RailsAdmin.config do |config|
+                config.model(self, &block)
+              end
             end
 
             alias_method :accepts_nested_attributes_for_without_rails_admin, :accepts_nested_attributes_for

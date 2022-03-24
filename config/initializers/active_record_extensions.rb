@@ -1,8 +1,12 @@
+# frozen_string_literal: true
+
 ActiveSupport.on_load(:active_record) do
   module ActiveRecord
     class Base
       def self.rails_admin(&block)
-        RailsAdmin.config(self, &block)
+        RailsAdmin.config do |config|
+          config.model(self, &block)
+        end
       end
 
       def rails_admin_default_object_label_method

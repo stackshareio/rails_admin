@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_admin/config/fields'
 require 'rails_admin/config/fields/types'
 require 'rails_admin/config/fields/types/file_upload'
@@ -5,7 +7,7 @@ require 'rails_admin/config/fields/types/file_upload'
 RailsAdmin::Config::Fields.register_factory do |parent, properties, fields|
   next false unless defined?(::Shrine)
 
-  attachment_names = parent.abstract_model.model.ancestors.select { |m| m.is_a?(Shrine::Attachment) }.map { |a| a.instance_variable_get("@name") }
+  attachment_names = parent.abstract_model.model.ancestors.select { |m| m.is_a?(Shrine::Attachment) }.map { |a| a.instance_variable_get('@name') }
   next false if attachment_names.blank?
 
   attachment_name = attachment_names.detect { |a| a == properties.name.to_s.chomp('_data').to_sym }

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'rails_admin/config/fields/base'
 require 'rails_admin/config/fields/types/file_upload'
 
@@ -12,7 +14,8 @@ module RailsAdmin
           register_instance_option :image? do
             false unless value
             if abstract_model.model.new.respond_to?("#{name}_name")
-              bindings[:object].send("#{name}_name").to_s.split('.').last =~ /jpg|jpeg|png|gif/i
+              mime_type = Mime::Type.lookup_by_extension(bindings[:object].send("#{name}_name").to_s.split('.').last)
+              mime_type.to_s.match?(/^image/)
             else
               true # Dragonfly really is image oriented
             end
@@ -32,6 +35,7 @@ module RailsAdmin
 
           def resource_url(thumb = false)
             return nil unless (v = value)
+
             thumb ? v.thumb(thumb).try(:url) : v.url
           end
         end
