@@ -1,12 +1,12 @@
 repo_name: stackshareio/rails_admin
-report_id: 0c4acfc57946bc6ae7f4a9955aba8d71
+report_id: ced67b22219febd5009c6f3fa84e0d62
 version: 0.1
 repo_type: Public
-timestamp: '2024-01-09T00:05:19+00:00'
+timestamp: '2024-02-15T18:30:58+00:00'
 requested_by: jeromedalbert
 provider: github
 branch: master
-detected_tools_count: 61
+detected_tools_count: 50
 tools:
 - name: CSS 3
   description: The latest evolution of the Cascading Style Sheets language
@@ -120,7 +120,7 @@ tools:
   last_updated_by: Erik Michaels-Ober
   last_updated_on: 2010-08-01 17:47:27.000000000 Z
 - name: Bundler
-  description: 'A consistent environment for tracking and installing  gems and versions '
+  description: A consistent environment for tracking and installing  gems and versions
   website_url: http://bundler.io
   open_source: false
   hosted_saas: false
@@ -153,6 +153,20 @@ tools:
   detection_source: ".github/workflows/test.yml"
   last_updated_by: M.Shibuya
   last_updated_on: 2020-11-27 08:37:16.000000000 Z
+- name: Istio
+  description: Open platform to connect, manage, and secure microservices, by Google,
+    IBM, and Lyft
+  website_url: https://istio.io/
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Microservices Tools
+  image_url: https://img.stackshare.io/service/7028/AGpa5VZV.jpg
+  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/.rubocop_todo.yml
+  detection_source: ".rubocop_todo.yml"
+  last_updated_by: Erik Michaels-Ober
+  last_updated_on: 2014-08-19 11:26:51.000000000 Z
 - name: RSpec
   description: Behaviour Driven Development for Ruby
   website_url: https://rspec.info/
@@ -207,7 +221,7 @@ tools:
   last_updated_by: Mitsuhiro Shibuya
   last_updated_on: 2020-11-23 11:00:39.000000000 Z
 - name: Paperclip
-  description: 'A file attachment management for ActiveRecord '
+  description: A file attachment management for ActiveRecord
   website_url: https://github.com/thoughtbot/paperclip
   open_source: true
   hosted_saas: false
@@ -265,49 +279,6 @@ tools:
   detection_source: spec/dummy_app/Gemfile
   last_updated_by: Mitsuhiro Shibuya
   last_updated_on: 2020-11-23 11:00:39.000000000 Z
-- name: activemodel-serializers-xml
-  description: XML serialization for your Active Model objects and Active Record models
-    - extracted from Rails
-  package_url: https://rubygems.org/activemodel-serializers-xml
-  version: '1.0'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: M.Shibuya
-  last_updated_on: 2019-04-29 04:41:33.000000000 Z
-- name: activerecord-jdbcmysql-adapter
-  description: MySQL JDBC adapter for JRuby on Rails
-  package_url: https://rubygems.org/activerecord-jdbcmysql-adapter
-  version: '1.2'
-  license: BSD-2-Clause
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/spec/dummy_app/Gemfile
-  detection_source: spec/dummy_app/Gemfile
-  last_updated_by: Mitsuhiro Shibuya
-  last_updated_on: 2020-11-23 11:00:39.000000000 Z
-- name: activerecord-jdbcpostgresql-adapter
-  description: Postgres JDBC adapter for JRuby on Rails
-  package_url: https://rubygems.org/activerecord-jdbcpostgresql-adapter
-  version: '1.2'
-  license: BSD-2-Clause
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/spec/dummy_app/Gemfile
-  detection_source: spec/dummy_app/Gemfile
-  last_updated_by: Mitsuhiro Shibuya
-  last_updated_on: 2020-11-23 11:00:39.000000000 Z
 - name: activerecord-jdbcsqlite3-adapter
   description: Sqlite3 JDBC adapter for JRuby on Rails
   package_url: https://rubygems.org/activerecord-jdbcsqlite3-adapter
@@ -337,21 +308,6 @@ tools:
   detection_source: Gemfile
   last_updated_by: M.Shibuya
   last_updated_on: 2015-06-12 12:17:44.000000000 Z
-- name: builder
-  description: Builder provides a number of builder objects that make creating structured
-    data simple to do
-  package_url: https://rubygems.org/builder
-  version: '3.1'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/18875/default_0cd89f02ed75d3a8429cd566a89b1a4a36ad114f.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: Erik Michaels-Ober
-  last_updated_on: 2013-06-28 01:55:22.000000000 Z
 - name: cancancan
   description: Simple authorization solution for Rails
   package_url: https://rubygems.org/cancancan
@@ -366,20 +322,6 @@ tools:
   detection_source: Gemfile
   last_updated_by: bodrovis
   last_updated_on: 2019-10-15 15:01:02.000000000 Z
-- name: carrierwave-mongoid
-  description: Mongoid support for CarrierWave
-  package_url: https://rubygems.org/carrierwave-mongoid
-  version: 0.6.3
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/spec/dummy_app/Gemfile
-  detection_source: spec/dummy_app/Gemfile
-  last_updated_by: Mitsuhiro Shibuya
-  last_updated_on: 2020-11-23 11:00:39.000000000 Z
 - name: coffee-rails
   description: CoffeeScript adapter for the Rails asset pipeline
   package_url: https://rubygems.org/coffee-rails
@@ -451,156 +393,6 @@ tools:
   detection_source: Gemfile
   last_updated_by: M.Shibuya
   last_updated_on: 2020-11-24 07:39:12.000000000 Z
-- name: jquery-rails
-  description: This gem provides jQuery and the jQuery-ujs driver for your Rails 4+
-    application
-  package_url: https://rubygems.org/jquery-rails
-  version: '3.0'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/18864/default_96cb61a9c0f8ef41b80df83209dca4f4c229184e.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: Jerome Dalbert
-  last_updated_on: 2022-03-29 22:19:49.000000000 Z
-  vulnerabilities:
-  - name: Denial of Service in jquery
-    cve_id: CVE-2016-10707
-    cve_url: https://github.com/advisories/GHSA-mhpp-875w-9cpv
-    detected_date: Sep 26
-    severity: high
-    first_patched: 3.0.0
-  - name: 'Duplicate Advisory: Prototype Pollution in jquery'
-    cve_id: CVE-2019-5428
-    cve_url: https://github.com/advisories/GHSA-wv67-q8rr-grjp
-    detected_date: Sep 26
-    severity: moderate
-    first_patched: 3.4.0
-  - name: jquery-rails and jquery-ujs subject to Exposure of Sensitive Information
-    cve_id: CVE-2015-1840
-    cve_url: https://github.com/advisories/GHSA-4whc-pp4x-9pf3
-    detected_date: Aug 22
-    severity: moderate
-    first_patched: 3.1.3
-  - name: jQuery Cross Site Scripting vulnerability
-    cve_id: CVE-2020-23064
-    cve_url: https://github.com/advisories/GHSA-257q-pv89-v3xv
-    detected_date: Jul 8
-    severity: moderate
-    first_patched: 4.4.0
-  - name: Cross-Site Scripting (XSS) in jquery
-    cve_id: CVE-2015-9251
-    cve_url: https://github.com/advisories/GHSA-rmxg-73gg-4p98
-    detected_date: Jul 6
-    severity: moderate
-    first_patched: 4.2.0
-  - name: XSS in jQuery as used in Drupal, Backdrop CMS, and other products
-    cve_id: CVE-2019-11358
-    cve_url: https://github.com/advisories/GHSA-6c3j-c64m-qhgq
-    detected_date: May 31
-    severity: moderate
-    first_patched: 4.3.4
-  - name: Potential XSS vulnerability in jQuery
-    cve_id: CVE-2020-11022
-    cve_url: https://github.com/advisories/GHSA-gxr4-xjj5-5px2
-    detected_date: Sep 26
-    severity: moderate
-    first_patched: 4.4.0
-  - name: Potential XSS vulnerability in jQuery
-    cve_id: CVE-2020-11023
-    cve_url: https://github.com/advisories/GHSA-jpcq-cgw6-v4j6
-    detected_date: May 5
-    severity: moderate
-    first_patched: 4.4.0
-- name: jquery-ui-rails
-  description: JQuery UI's JavaScript
-  package_url: https://rubygems.org/jquery-ui-rails
-  version: '5.0'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/19034/default_3b4cf18706356e37d5fd855ffc4bc322798b3fd9.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: Jerome Dalbert
-  last_updated_on: 2022-03-29 22:19:49.000000000 Z
-  vulnerabilities:
-  - name: High severity vulnerability that affects jquery-ui
-    cve_id: 
-    cve_url: https://github.com/advisories/GHSA-g8q2-24jh-5hpc
-    detected_date: Sep 27
-    severity: high
-    first_patched: 6.0.0
-  - name: jQuery UI vulnerable to XSS when refreshing a checkboxradio with an HTML-like
-      initial text label
-    cve_id: CVE-2022-31160
-    cve_url: https://github.com/advisories/GHSA-h6gj-6jjq-h8g9
-    detected_date: Sep 27
-    severity: moderate
-    first_patched: 7.0.0
-  - name: XSS in `*Text` options of the Datepicker widget in jquery-ui
-    cve_id: CVE-2021-41183
-    cve_url: https://github.com/advisories/GHSA-j7qv-pgf6-hvh4
-    detected_date: Sep 26
-    severity: moderate
-    first_patched: 7.0.0
-  - name: XSS in the `altField` option of the Datepicker widget in jquery-ui
-    cve_id: CVE-2021-41182
-    cve_url: https://github.com/advisories/GHSA-9gj3-hwp5-pmwc
-    detected_date: Sep 26
-    severity: moderate
-    first_patched: 7.0.0
-  - name: XSS in the `of` option of the `.position()` util in jquery-ui
-    cve_id: CVE-2021-41184
-    cve_url: https://github.com/advisories/GHSA-gpqq-952q-5327
-    detected_date: Sep 26
-    severity: moderate
-    first_patched: 7.0.0
-  - name: jQuery-UI vulnerable to Cross-site Scripting in dialog closeText
-    cve_id: CVE-2016-7103
-    cve_url: https://github.com/advisories/GHSA-hpcf-8vf9-q4gj
-    detected_date: Jan 27
-    severity: moderate
-    first_patched: 6.0.0
-- name: kaminari
-  description: Kaminari is a Scope &amp;amp; Engine based
-  package_url: https://rubygems.org/kaminari
-  version: '0.14'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/18941/default_ec64e7b00489c2b012b637eba2526e31e442c25b.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: Koichi ITO
-  last_updated_on: 2017-01-11 09:26:25.000000000 Z
-  vulnerabilities:
-  - name: Cross-Site Scripting in Kaminari
-    cve_id: CVE-2020-11082
-    cve_url: https://github.com/advisories/GHSA-r5jw-62xg-j433
-    detected_date: Aug 22
-    severity: moderate
-    first_patched: 1.2.1
-- name: kaminari-mongoid
-  description: Kaminari-mongoid lets your Mongoid models be paginatable
-  package_url: https://rubygems.org/kaminari-mongoid
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/spec/dummy_app/Gemfile
-  detection_source: spec/dummy_app/Gemfile
-  last_updated_by: Mitsuhiro Shibuya
-  last_updated_on: 2020-11-23 11:00:39.000000000 Z
 - name: launchy
   description: Launchy is helper class for launching cross-platform applications in
     a fire and forget manner
@@ -631,32 +423,18 @@ tools:
   last_updated_by: Erik Michaels-Ober
   last_updated_on: 2013-02-12 12:28:04.000000000 Z
   vulnerabilities:
-  - name: MiniMagick Gem for Ruby URI Handling Arbitrary Command Injection
-    cve_id: CVE-2013-2616
-    cve_url: https://github.com/advisories/GHSA-w754-gq8r-pf5f
-    detected_date: Aug 22
-    severity: high
-    first_patched: 3.6.0
   - name: OS Command Injection in MiniMagick
     cve_id: CVE-2019-13574
     cve_url: https://github.com/advisories/GHSA-r7j3-vvh2-xrpj
     detected_date: Aug 22
     severity: high
     first_patched: 4.9.4
-- name: mongoid-paperclip
-  description: Enables you to use Paperclip with the Mongoid ODM for MongoDB
-  package_url: https://rubygems.org/mongoid-paperclip
-  version: 0.0.8
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/spec/dummy_app/Gemfile
-  detection_source: spec/dummy_app/Gemfile
-  last_updated_by: Mitsuhiro Shibuya
-  last_updated_on: 2020-11-23 11:00:39.000000000 Z
+  - name: MiniMagick Gem for Ruby URI Handling Arbitrary Command Injection
+    cve_id: CVE-2013-2616
+    cve_url: https://github.com/advisories/GHSA-w754-gq8r-pf5f
+    detected_date: Aug 22
+    severity: high
+    first_patched: 3.6.0
 - name: mysql2
   description: A simple, fast Mysql library for Ruby, binding to libmysql
   package_url: https://rubygems.org/mysql2
@@ -671,21 +449,6 @@ tools:
   detection_source: Gemfile
   last_updated_by: M.Shibuya
   last_updated_on: 2018-04-30 10:35:56.000000000 Z
-- name: nested_form
-  description: Gem to conveniently handle multiple models in a single form with Rails
-    3 and jQuery or Prototype
-  package_url: https://rubygems.org/nested_form
-  version: '0.3'
-  license: MIT
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/19801/default_8c2b1973aa2be7e62630120d1cb15589f4cbf796.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: Benoit Bénézech
-  last_updated_on: 2013-02-06 09:39:20.000000000 Z
 - name: paper_trail
   description: Track changes to your models, for auditing or versioning
   package_url: https://rubygems.org/paper_trail
@@ -784,20 +547,6 @@ tools:
   detection_source: spec/dummy_app/Gemfile
   last_updated_by: Mitsuhiro Shibuya
   last_updated_on: 2020-11-23 11:00:39.000000000 Z
-- name: remotipart
-  description: Remotipart is a Ruby on Rails gem enabling remote multipart forms
-  package_url: https://rubygems.org/remotipart
-  version: '1.3'
-  license: Other
-  open_source: true
-  hosted_saas: false
-  category: Libraries
-  sub_category: RubyGems Packages
-  image_url: https://img.stackshare.io/package/rubygems/image.png
-  detection_source_url: https://github.com/stackshareio/rails_admin/blob/master/rails_admin.gemspec
-  detection_source: rails_admin.gemspec
-  last_updated_by: M.Shibuya
-  last_updated_on: 2016-09-18 10:21:25.000000000 Z
 - name: rspec-expectations
   description: Rspec-expectations provides a simple
   package_url: https://rubygems.org/rspec-expectations
