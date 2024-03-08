@@ -2,7 +2,7 @@ repo_name: stackshareio/rails_admin
 report_id: 8ca2dcdc4d34101013bc9c3e1ac8799f
 version: 0.1
 repo_type: Public
-timestamp: '2024-03-01T20:36:23+00:00'
+timestamp: '2024-03-08T13:22:12+00:00'
 requested_by: jeromedalbert
 provider: github
 branch: master
@@ -531,7 +531,7 @@ tools:
   last_updated_on: 2022-03-29 22:19:49.000000000 Z
   vulnerabilities:
   - name: High severity vulnerability that affects jquery-ui
-    cve_id: 
+    cve_id:
     cve_url: https://github.com/advisories/GHSA-g8q2-24jh-5hpc
     detected_date: Sep 27
     severity: high
