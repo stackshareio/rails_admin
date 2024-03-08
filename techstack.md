@@ -56,7 +56,7 @@ Full tech stack [here](/techstack.md)
 # Tech Stack File
 ![](https://img.stackshare.io/repo.svg "repo") [stackshareio/rails_admin](https://github.com/stackshareio/rails_admin)![](https://img.stackshare.io/public_badge.svg "public")
 <br/><br/>
-|61<br/>Tools used|03/01/24 <br/>Report generated|
+|61<br/>Tools used|03/08/24 <br/>Report generated|
 |------|------|
 </div>
 
